@@ -349,17 +349,19 @@ function renderChips(values, type, productIndex) {
 function createTagInputHTML(type, productIndex) {
 
     let listId = "ingredient-options";
-
     let placeholder = "Type ingredient and press Enter...";
+    let normalize = "lowercase";
 
     if (type === "claim") {
         listId = "claim-options";
         placeholder = "Type claim and press Enter...";
+        normalize = "uppercase";
     }
 
     if (type === "allergen") {
         listId = "allergen-options";
         placeholder = "Type allergen and press Enter...";
+        normalize = "uppercase";
     }
 
     return `
@@ -370,6 +372,7 @@ function createTagInputHTML(type, productIndex) {
                 class="tag-input-field"
                 data-type="${type}"
                 data-product-index="${productIndex}"
+                data-normalize="${normalize}"
                 list="${listId}"
                 placeholder="${placeholder}"
                 autocomplete="off"
@@ -378,7 +381,6 @@ function createTagInputHTML(type, productIndex) {
         </div>
     `;
 }
-
 
 // ============================================
 // 10. Product Event Listeners
@@ -466,7 +468,7 @@ function attachProductListeners() {
 
 function addChipFromInput(input) {
 
-    const value = input.value.trim();
+    let value = input.value.trim();
 
     if (value === "") {
         return;
@@ -477,6 +479,20 @@ function addChipFromInput(input) {
 
     const type =
         input.dataset.type;
+
+    const normalize =
+        input.dataset.normalize;
+
+
+    // Normalize according to the tag-input configuration.
+    if (normalize === "lowercase") {
+        value = value.toLowerCase();
+    }
+
+    if (normalize === "uppercase") {
+        value = value.toUpperCase();
+    }
+
 
     const product = products[productIndex];
 
@@ -491,7 +507,7 @@ function addChipFromInput(input) {
     }
 
 
-    // Prevent duplicate chips.
+    // Prevent duplicate chips after normalization.
     if (targetArray.includes(value)) {
         input.value = "";
         return;
@@ -506,7 +522,6 @@ function addChipFromInput(input) {
 
     renderProducts();
 }
-
 
 // ============================================
 // 12. Remove Chip
