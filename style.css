@@ -1,0 +1,675 @@
+/* ============================================
+   Festival Food-Label Auditor
+   Visual System
+   ============================================ */
+
+
+/* ============================================
+   1. Base
+   ============================================ */
+
+:root {
+    --background: #FAF3E9;
+    --surface: #FFFDF8;
+    --text: #252321;
+    --muted-text: #6F6A63;
+    --border: #D8D0C4;
+    --border-strong: #BEB5A8;
+
+    --clean: #356B4D;
+    --faulty: #9B3D32;
+    --warning: #8A641D;
+
+    --focus: #5D5145;
+
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: Arial, Helvetica, sans-serif;
+    --mono: "Courier New", Courier, monospace;
+
+    --content-width: 1180px;
+    --section-spacing: 72px;
+}
+
+
+/* ============================================
+   2. Reset
+   ============================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font-family: var(--serif);
+    line-height: 1.5;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    color: inherit;
+}
+
+button,
+input {
+    outline: none;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+}
+
+
+/* ============================================
+   3. Application Container
+   ============================================ */
+
+.app {
+    width: min(
+        calc(100% - 48px),
+        var(--content-width)
+    );
+
+    margin: 0 auto;
+    padding: 64px 0 96px;
+}
+
+
+/* ============================================
+   4. Header
+   ============================================ */
+
+.site-header {
+    padding-bottom: 64px;
+    border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+    margin: 0 0 20px;
+
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+}
+
+.site-header h1 {
+    margin: 0;
+
+    max-width: 760px;
+
+    font-family: var(--serif);
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 400;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+}
+
+
+/* ============================================
+   5. Sections
+   ============================================ */
+
+.section {
+    padding: var(--section-spacing) 0;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.section-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 32px;
+
+    margin-bottom: 28px;
+}
+
+.section-heading h2 {
+    margin: 6px 0 0;
+
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 400;
+}
+
+.section-number {
+    margin: 0;
+
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+
+/* ============================================
+   6. Tables
+   ============================================ */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 16px 14px;
+
+    border-bottom: 1px solid var(--border);
+
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+td {
+    font-size: 17px;
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* ============================================
+   7. Rules Table
+   ============================================ */
+
+.rules-table {
+    background: transparent;
+}
+
+.rules-table td:first-child {
+    font-weight: 600;
+}
+
+.rules-table td:nth-child(2),
+.rules-table td:nth-child(3) {
+    font-family: var(--sans);
+    font-size: 15px;
+}
+
+
+/* ============================================
+   8. Product Section
+   ============================================ */
+
+.product-heading {
+    align-items: flex-end;
+}
+
+.product-count {
+    margin: 0;
+
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+.product-table-wrapper {
+    border-top: 1px solid var(--border);
+}
+
+.product-table {
+    min-width: 900px;
+}
+
+.product-table th,
+.product-table td {
+    padding: 18px 14px;
+}
+
+.product-table td:first-child {
+    font-family: var(--mono);
+    font-size: 14px;
+}
+
+.product-table td:nth-child(2) {
+    font-size: 19px;
+}
+
+
+/* ============================================
+   9. Empty States
+   ============================================ */
+
+.empty-state {
+    padding: 42px 20px;
+
+    text-align: center;
+
+    border-top: 1px solid var(--border);
+}
+
+.empty-state-title {
+    margin: 0 0 6px;
+
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.empty-state p:last-child {
+    margin: 0;
+
+    color: var(--muted-text);
+    font-size: 16px;
+}
+
+
+/* ============================================
+   10. Product Controls
+   ============================================ */
+
+.product-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-top: 28px;
+}
+
+
+/* ============================================
+   11. Buttons
+   ============================================ */
+
+.button {
+    min-height: 44px;
+    padding: 10px 18px;
+
+    border: 1px solid var(--border-strong);
+    background: transparent;
+
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+
+    cursor: pointer;
+
+    transition:
+        background-color 140ms ease,
+        color 140ms ease,
+        border-color 140ms ease;
+}
+
+.button:hover {
+    border-color: var(--text);
+}
+
+.button-primary {
+    border-color: var(--text);
+    background: var(--text);
+    color: var(--background);
+}
+
+.button-primary:hover {
+    background: #3B3835;
+}
+
+.button-secondary {
+    background: transparent;
+}
+
+
+/* ============================================
+   12. Audit Action
+   ============================================ */
+
+.audit-action {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-top: 28px;
+}
+
+#compute-audit-button {
+    min-width: 180px;
+}
+
+
+/* ============================================
+   13. Data Change Banner
+   ============================================ */
+
+.data-change-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-top: 24px;
+    padding: 12px 14px;
+
+    border-left: 3px solid var(--warning);
+
+    background: rgba(138, 100, 29, 0.07);
+
+    color: var(--warning);
+
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.data-change-banner[hidden],
+.validation-error[hidden] {
+    display: none;
+}
+
+
+/* ============================================
+   14. Validation Error
+   ============================================ */
+
+.validation-error {
+    margin-top: 24px;
+    padding: 18px;
+
+    border-left: 3px solid var(--faulty);
+
+    background: rgba(155, 61, 50, 0.07);
+}
+
+.validation-error-title {
+    margin: 0 0 8px;
+
+    color: var(--faulty);
+
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.validation-error-message {
+    margin: 0;
+
+    color: var(--text);
+    font-size: 17px;
+}
+
+
+/* ============================================
+   15. Audit Summary
+   ============================================ */
+
+.audit-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.summary-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    padding: 28px 20px;
+}
+
+.summary-metric + .summary-metric {
+    border-left: 1px solid var(--border);
+}
+
+.summary-number {
+    font-family: var(--serif);
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.summary-label {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+
+/* ============================================
+   16. Audit Results
+   ============================================ */
+
+.results-heading {
+    align-items: flex-end;
+}
+
+.audit-results {
+    display: flex;
+    flex-direction: column;
+}
+
+.audit-result {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto;
+
+    gap: 24px;
+
+    padding: 28px 0;
+
+    border-top: 1px solid var(--border);
+}
+
+.audit-result:last-child {
+    border-bottom: 1px solid var(--border);
+}
+
+.audit-result-product {
+    margin: 0;
+
+    font-family: var(--serif);
+    font-size: 24px;
+}
+
+.audit-result-id {
+    margin: 4px 0 0;
+
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted-text);
+}
+
+.audit-result-status {
+    align-self: start;
+
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.audit-result-status.clean {
+    color: var(--clean);
+}
+
+.audit-result-status.faulty {
+    color: var(--faulty);
+}
+
+.audit-result-details {
+    grid-column: 1 / -1;
+}
+
+.no-issues {
+    margin: 0;
+
+    color: var(--muted-text);
+    font-size: 16px;
+}
+
+.issue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.issue-list li {
+    font-family: var(--mono);
+    font-size: 13px;
+}
+
+
+/* ============================================
+   17. Result Filter
+   ============================================ */
+
+.result-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.filter-button {
+    padding: 8px 10px;
+
+    border: 1px solid transparent;
+    background: transparent;
+
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+
+    cursor: pointer;
+}
+
+.filter-button:hover {
+    border-color: var(--border);
+}
+
+.filter-button.active {
+    border-color: var(--border-strong);
+    background: var(--surface);
+}
+
+
+/* ============================================
+   18. Hidden UI
+   ============================================ */
+
+#no-audit-state[hidden],
+#no-results-state[hidden],
+#empty-products[hidden] {
+    display: none;
+}
+
+
+/* ============================================
+   19. Accessibility
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    html {
+        scroll-behavior: auto;
+    }
+
+    .button {
+        transition: none;
+    }
+}
+
+
+/* ============================================
+   20. Responsive Layout
+   ============================================ */
+
+@media (max-width: 760px) {
+
+    .app {
+        width: min(
+            calc(100% - 28px),
+            var(--content-width)
+        );
+
+        padding-top: 36px;
+    }
+
+    .site-header {
+        padding-bottom: 44px;
+    }
+
+    .section {
+        padding: 48px 0;
+    }
+
+    .section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .site-header h1 {
+        font-size: clamp(40px, 13vw, 58px);
+    }
+
+    .audit-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-metric + .summary-metric {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+    }
+
+    .audit-result {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .audit-result-status {
+        order: -1;
+    }
+
+    .audit-action {
+        justify-content: stretch;
+    }
+
+    #compute-audit-button {
+        width: 100%;
+    }
+
+    .product-controls {
+        flex-direction: column;
+    }
+
+    .product-controls .button {
+        width: 100%;
+    }
+}
