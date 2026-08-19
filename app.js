@@ -507,20 +507,33 @@ function addChipFromInput(input) {
     }
 
 
-    // Prevent duplicate chips after normalization.
+    // Prevent duplicate chips.
     if (targetArray.includes(value)) {
         input.value = "";
+        input.focus();
         return;
     }
 
 
     targetArray.push(value);
 
-    input.value = "";
+    // Remember which input should receive focus
+    // after the table is re-rendered.
+    const inputSelector =
+        `.tag-input-field[data-type="${type}"][data-product-index="${productIndex}"]`;
 
     markDataChanged();
 
     renderProducts();
+
+    // renderProducts() creates a new input,
+    // so find that new input and focus it.
+    const newInput =
+        document.querySelector(inputSelector);
+
+    if (newInput) {
+        newInput.focus();
+    }
 }
 
 // ============================================
