@@ -673,3 +673,324 @@ tbody tr:last-child td {
         width: 100%;
     }
 }
+
+/* ============================================
+   21. Product Editing & Tags
+   ============================================ */
+
+/* --------------------------------------------
+   Read-only tags
+   -------------------------------------------- */
+
+.readonly-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+
+    min-height: 28px;
+}
+
+.readonly-tag {
+    display: inline-block;
+
+    color: var(--text);
+
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.4;
+}
+
+.readonly-tag + .readonly-tag::before {
+    content: "·";
+    margin-right: 10px;
+
+    color: var(--muted-text);
+}
+
+
+/* --------------------------------------------
+   Empty product cells
+   -------------------------------------------- */
+
+.empty-cell {
+    color: var(--muted-text);
+
+    font-family: var(--serif);
+}
+
+
+/* --------------------------------------------
+   Editable tag container
+   -------------------------------------------- */
+
+.chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+
+    margin-bottom: 7px;
+}
+
+
+/* --------------------------------------------
+   Editable tag chip
+   -------------------------------------------- */
+
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    min-height: 30px;
+    padding: 3px 5px 3px 9px;
+
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+
+    font-family: var(--serif);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+
+/* --------------------------------------------
+   Chip remove button
+   -------------------------------------------- */
+
+.chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+    height: 24px;
+
+    padding: 0;
+
+    border: 1px solid var(--border);
+    background: transparent;
+
+    color: var(--text);
+
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 140ms ease,
+        border-color 140ms ease;
+}
+
+.chip-remove:hover {
+    border-color: var(--text);
+    background: var(--background);
+}
+
+
+/* --------------------------------------------
+   Tag input
+   -------------------------------------------- */
+
+.tag-input {
+    width: 100%;
+}
+
+.tag-input-field {
+    width: 100%;
+    min-height: 42px;
+
+    padding: 7px 10px;
+
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+
+    color: var(--text);
+
+    font-family: var(--serif);
+    font-size: 17px;
+
+    transition:
+        border-color 140ms ease,
+        background-color 140ms ease;
+}
+
+.tag-input-field::placeholder {
+    color: var(--muted-text);
+    opacity: 0.9;
+}
+
+.tag-input-field:hover {
+    border-color: var(--text);
+}
+
+.tag-input-field:focus {
+    border-color: var(--focus);
+    background: var(--surface);
+}
+
+
+/* --------------------------------------------
+   Product ID / Name editing inputs
+   -------------------------------------------- */
+
+.edit-text-input {
+    width: 100%;
+    min-height: 42px;
+
+    padding: 7px 10px;
+
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+
+    color: var(--text);
+
+    font-family: var(--serif);
+    font-size: 17px;
+}
+
+.edit-text-input:focus {
+    border-color: var(--focus);
+}
+
+
+/* Product ID keeps the monospace treatment */
+
+.new-product-id,
+.edit-product-id {
+    font-family: var(--mono);
+    font-size: 14px;
+}
+
+
+/* Product name gets the larger editorial treatment */
+
+.new-product-name,
+.edit-product-name {
+    font-family: var(--serif);
+    font-size: 19px;
+}
+
+
+/* --------------------------------------------
+   Product action area
+   -------------------------------------------- */
+
+.product-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+
+/* --------------------------------------------
+   Table action buttons
+   -------------------------------------------- */
+
+.table-action-button {
+    min-height: 38px;
+
+    padding: 7px 12px;
+
+    border: 1px solid var(--border-strong);
+    background: transparent;
+
+    color: var(--text);
+
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+
+    cursor: pointer;
+
+    transition:
+        background-color 140ms ease,
+        color 140ms ease,
+        border-color 140ms ease;
+}
+
+.table-action-button:hover {
+    border-color: var(--text);
+}
+
+
+/* --------------------------------------------
+   Save / Edit
+   -------------------------------------------- */
+
+.save-button,
+.edit-button {
+    border-color: var(--text);
+}
+
+.save-button:hover,
+.edit-button:hover {
+    background: var(--text);
+    color: var(--background);
+}
+
+
+/* --------------------------------------------
+   Cancel
+   -------------------------------------------- */
+
+.cancel-button {
+    color: var(--muted-text);
+}
+
+.cancel-button:hover {
+    color: var(--text);
+}
+
+
+/* --------------------------------------------
+   Product table editable rows
+   -------------------------------------------- */
+
+.product-table td {
+    vertical-align: middle;
+}
+
+.product-table td:nth-child(3),
+.product-table td:nth-child(4),
+.product-table td:nth-child(5) {
+    min-width: 190px;
+}
+
+
+/* --------------------------------------------
+   New / edit row spacing
+   -------------------------------------------- */
+
+.product-table .chip-container + .tag-input {
+    margin-top: 2px;
+}
+
+
+/* --------------------------------------------
+   Responsive product controls
+   -------------------------------------------- */
+
+@media (max-width: 760px) {
+
+    .readonly-tags {
+        gap: 4px 8px;
+    }
+
+    .readonly-tag {
+        font-size: 16px;
+    }
+
+    .product-actions {
+        align-items: stretch;
+    }
+
+    .table-action-button {
+        flex: 1;
+    }
+}
