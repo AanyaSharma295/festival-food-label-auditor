@@ -16,10 +16,12 @@ let dataChangedSinceAudit = false;
 
 let filter = "ALL";
 
-// Existing-product edit state.
-// Only one existing row can be edited at a time.
+// Existing product currently being edited.
+// null means no existing product is being edited.
 let editingIndex = null;
 
+// Temporary copy of the existing product
+// currently being edited.
 let editDraft = null;
 
 
@@ -133,6 +135,7 @@ const SAMPLE_PRODUCTS = [
 // ============================================
 
 function cloneProduct(product) {
+
     return {
         id: product.id,
         name: product.name,
@@ -145,6 +148,7 @@ function cloneProduct(product) {
 
 
 function cloneProducts(source) {
+
     return source.map(product => ({
         id: product.id,
         name: product.name,
@@ -157,24 +161,33 @@ function cloneProducts(source) {
 
 
 function markDataChanged() {
+
     dataChangedSinceAudit = true;
+
     updateDataChangeBanner();
 }
 
 
 function updateDataChangeBanner() {
-    dataChangeBanner.hidden = !dataChangedSinceAudit;
+
+    dataChangeBanner.hidden =
+        !dataChangedSinceAudit;
 }
 
 
 function clearValidationError() {
+
     validationError.hidden = true;
+
     validationErrorMessage.textContent = "";
 }
 
 
 function showValidationError(message) {
-    validationErrorMessage.textContent = message;
+
+    validationErrorMessage.textContent =
+        message;
+
     validationError.hidden = false;
 }
 
@@ -184,27 +197,18 @@ function clearAuditOutput() {
     auditResult = null;
 
     summaryClean.textContent = "0";
+
     summaryFaulty.textContent = "0";
+
     summaryIssues.textContent = "0";
 
     auditSummary.hidden = true;
+
     noAuditState.hidden = false;
 
     auditResults.innerHTML = "";
+
     noResultsState.hidden = false;
-}
-
-
-function getProductForInput(index) {
-
-    if (
-        editingIndex === index &&
-        editDraft !== null
-    ) {
-        return editDraft;
-    }
-
-    return products[index];
 }
 
 
@@ -222,7 +226,7 @@ function updateProductCount() {
 
 
 // ============================================
-// 6. Product Table Rendering
+// 6. Main Product Rendering
 // ============================================
 
 function renderProducts() {
@@ -239,24 +243,43 @@ function renderProducts() {
         index++
     ) {
 
-        const product = products[index];
+        const product =
+            products[index];
 
         let row;
 
 
+        // Existing product currently being edited.
         if (
             editingIndex === index &&
             editDraft !== null
         ) {
-            row = createEditProductRow(
-                editDraft,
-                index
-            );
-        } else {
-            row = createProductRow(
-                product,
-                index
-            );
+
+            row =
+                createEditProductRow(
+                    editDraft,
+                    index
+                );
+        }
+
+        // Newly added product.
+        else if (product.isNew) {
+
+            row =
+                createNewProductRow(
+                    product,
+                    index
+                );
+        }
+
+        // Normal existing product.
+        else {
+
+            row =
+                createReadOnlyProductRow(
+                    product,
+                    index
+                );
         }
 
 
@@ -271,106 +294,19 @@ function renderProducts() {
 
 
 // ============================================
-// 7. New / Normal Product Row
+// 7. Read-Only Existing Product Row
 // ============================================
 
-function createProductRow(product, index) {
+function createReadOnlyProductRow(
+    product,
+    index
+) {
 
     const row =
         document.createElement("tr");
 
     row.dataset.index = index;
 
-
-    // ----------------------------------------
-    // Newly Added Product
-    // ----------------------------------------
-
-    if (product.isNew) {
-
-        row.innerHTML = `
-            <td>
-                <input
-                    type="text"
-                    class="edit-text-input new-product-id"
-                    data-index="${index}"
-                    value="${escapeHTML(product.id)}"
-                    aria-label="Product ID"
-                >
-            </td>
-
-            <td>
-                <input
-                    type="text"
-                    class="edit-text-input new-product-name"
-                    data-index="${index}"
-                    value="${escapeHTML(product.name)}"
-                    placeholder="Product name"
-                    aria-label="Product name"
-                >
-            </td>
-
-            <td>
-                ${renderChips(
-                    product.ingredients,
-                    "ingredient",
-                    index
-                )}
-
-                ${createTagInputHTML(
-                    "ingredient",
-                    index
-                )}
-            </td>
-
-            <td>
-                ${renderChips(
-                    product.claimedTags,
-                    "claim",
-                    index
-                )}
-
-                ${createTagInputHTML(
-                    "claim",
-                    index
-                )}
-            </td>
-
-            <td>
-                ${renderChips(
-                    product.declaredAllergens,
-                    "allergen",
-                    index
-                )}
-
-                ${createTagInputHTML(
-                    "allergen",
-                    index
-                )}
-            </td>
-
-            <td>
-                <div class="product-actions">
-
-                    <button
-                        type="button"
-                        class="table-action-button delete-button"
-                        data-index="${index}"
-                    >
-                        DELETE
-                    </button>
-
-                </div>
-            </td>
-        `;
-
-        return row;
-    }
-
-
-    // ----------------------------------------
-    // Existing Product
-    // ----------------------------------------
 
     row.innerHTML = `
         <td>
@@ -383,6 +319,89 @@ function createProductRow(product, index) {
             <span class="product-name">
                 ${escapeHTML(product.name || "—")}
             </span>
+        </td>
+
+        <td>
+            ${renderReadOnlyTags(
+                product.ingredients
+            )}
+        </td>
+
+        <td>
+            ${renderReadOnlyTags(
+                product.claimedTags
+            )}
+        </td>
+
+        <td>
+            ${renderReadOnlyTags(
+                product.declaredAllergens
+            )}
+        </td>
+
+        <td>
+            <div class="product-actions">
+
+                <button
+                    type="button"
+                    class="table-action-button edit-button"
+                    data-index="${index}"
+                >
+                    EDIT
+                </button>
+
+                <button
+                    type="button"
+                    class="table-action-button delete-button"
+                    data-index="${index}"
+                >
+                    DELETE
+                </button>
+
+            </div>
+        </td>
+    `;
+
+
+    return row;
+}
+
+
+// ============================================
+// 8. New Product Row
+// ============================================
+
+function createNewProductRow(
+    product,
+    index
+) {
+
+    const row =
+        document.createElement("tr");
+
+    row.dataset.index = index;
+
+
+    row.innerHTML = `
+        <td>
+            <input
+                type="text"
+                class="edit-text-input new-product-id"
+                data-index="${index}"
+                value="${escapeHTML(product.id)}"
+                aria-label="Product ID"
+            >
+        </td>
+
+        <td>
+            <input
+                type="text"
+                class="edit-text-input new-product-name"
+                data-index="${index}"
+                value="${escapeHTML(product.name)}"
+                placeholder="Product name"
+                aria-label="Product name"
+            >
         </td>
 
         <td>
@@ -429,14 +448,6 @@ function createProductRow(product, index) {
 
                 <button
                     type="button"
-                    class="table-action-button edit-button"
-                    data-index="${index}"
-                >
-                    EDIT
-                </button>
-
-                <button
-                    type="button"
                     class="table-action-button delete-button"
                     data-index="${index}"
                 >
@@ -447,20 +458,25 @@ function createProductRow(product, index) {
         </td>
     `;
 
+
     return row;
 }
 
 
 // ============================================
-// 8. Existing Product Edit Row
+// 9. Existing Product Edit Row
 // ============================================
 
-function createEditProductRow(product, index) {
+function createEditProductRow(
+    product,
+    index
+) {
 
     const row =
         document.createElement("tr");
 
     row.dataset.index = index;
+
 
     row.innerHTML = `
         <td>
@@ -545,12 +561,43 @@ function createEditProductRow(product, index) {
         </td>
     `;
 
+
     return row;
 }
 
 
 // ============================================
-// 9. HTML Escaping
+// 10. Read-Only Tags
+// ============================================
+
+function renderReadOnlyTags(values) {
+
+    if (values.length === 0) {
+
+        return `
+            <span class="empty-cell">
+                —
+            </span>
+        `;
+    }
+
+
+    return `
+        <div class="readonly-tags">
+
+            ${values.map(value => `
+                <span class="readonly-tag">
+                    ${escapeHTML(value)}
+                </span>
+            `).join("")}
+
+        </div>
+    `;
+}
+
+
+// ============================================
+// 11. HTML Escaping
 // ============================================
 
 function escapeHTML(value) {
@@ -565,7 +612,7 @@ function escapeHTML(value) {
 
 
 // ============================================
-// 10. Chip Rendering
+// 12. Editable Chips
 // ============================================
 
 function renderChips(
@@ -578,29 +625,32 @@ function renderChips(
         return "";
     }
 
+
     return `
         <div class="chip-container">
 
-            ${values.map((value, valueIndex) => `
-                <span class="tag-chip">
+            ${values.map(
+                (value, valueIndex) => `
+                    <span class="tag-chip">
 
-                    <span>
-                        ${escapeHTML(value)}
+                        <span>
+                            ${escapeHTML(value)}
+                        </span>
+
+                        <button
+                            type="button"
+                            class="chip-remove"
+                            data-type="${type}"
+                            data-product-index="${productIndex}"
+                            data-value-index="${valueIndex}"
+                            aria-label="Remove ${escapeHTML(value)}"
+                        >
+                            ×
+                        </button>
+
                     </span>
-
-                    <button
-                        type="button"
-                        class="chip-remove"
-                        data-type="${type}"
-                        data-product-index="${productIndex}"
-                        data-value-index="${valueIndex}"
-                        aria-label="Remove ${escapeHTML(value)}"
-                    >
-                        ×
-                    </button>
-
-                </span>
-            `).join("")}
+                `
+            ).join("")}
 
         </div>
     `;
@@ -608,7 +658,7 @@ function renderChips(
 
 
 // ============================================
-// 11. Reusable Tag Input
+// 13. Reusable Tag Input
 // ============================================
 
 function createTagInputHTML(
@@ -672,10 +722,11 @@ function createTagInputHTML(
 
 
 // ============================================
-// 12. Product Event Listeners
+// 14. Attach Event Listeners
 // ============================================
 
 function attachProductListeners() {
+
 
     // ----------------------------------------
     // New Product ID
@@ -685,6 +736,7 @@ function attachProductListeners() {
         document.querySelectorAll(
             ".new-product-id"
         );
+
 
     newProductIdInputs.forEach(input => {
 
@@ -698,9 +750,11 @@ function attachProductListeners() {
                 const product =
                     products[index];
 
+
                 if (!product) {
                     return;
                 }
+
 
                 product.id =
                     input.value.trim();
@@ -720,6 +774,7 @@ function attachProductListeners() {
             ".new-product-name"
         );
 
+
     newProductNameInputs.forEach(input => {
 
         input.addEventListener(
@@ -732,12 +787,14 @@ function attachProductListeners() {
                 const product =
                     products[index];
 
+
                 if (!product) {
                     return;
                 }
 
-                // Store immediately so future
-                // renderProducts() calls preserve it.
+
+                // Store immediately so a re-render
+                // does not lose the name.
                 product.name =
                     input.value;
 
@@ -748,13 +805,14 @@ function attachProductListeners() {
 
 
     // ----------------------------------------
-    // Existing Product Edit - ID
+    // Existing Edit: ID
     // ----------------------------------------
 
     const editIdInputs =
         document.querySelectorAll(
             ".edit-product-id"
         );
+
 
     editIdInputs.forEach(input => {
 
@@ -766,21 +824,23 @@ function attachProductListeners() {
                     return;
                 }
 
+
                 editDraft.id =
-                    input.value.trim();
+                    input.value;
             }
         );
     });
 
 
     // ----------------------------------------
-    // Existing Product Edit - Name
+    // Existing Edit: Name
     // ----------------------------------------
 
     const editNameInputs =
         document.querySelectorAll(
             ".edit-product-name"
         );
+
 
     editNameInputs.forEach(input => {
 
@@ -791,6 +851,7 @@ function attachProductListeners() {
                 if (!editDraft) {
                     return;
                 }
+
 
                 editDraft.name =
                     input.value;
@@ -808,6 +869,7 @@ function attachProductListeners() {
             ".tag-input-field"
         );
 
+
     inputs.forEach(input => {
 
         input.addEventListener(
@@ -817,6 +879,7 @@ function attachProductListeners() {
                 if (event.key !== "Enter") {
                     return;
                 }
+
 
                 event.preventDefault();
 
@@ -834,6 +897,7 @@ function attachProductListeners() {
         document.querySelectorAll(
             ".chip-remove"
         );
+
 
     removeButtons.forEach(button => {
 
@@ -854,6 +918,7 @@ function attachProductListeners() {
                 const type =
                     button.dataset.type;
 
+
                 removeChip(
                     productIndex,
                     type,
@@ -873,16 +938,17 @@ function attachProductListeners() {
             ".edit-button"
         );
 
+
     editButtons.forEach(button => {
 
         button.addEventListener(
             "click",
             () => {
 
-                const productIndex =
+                const index =
                     Number(button.dataset.index);
 
-                editProduct(productIndex);
+                editProduct(index);
             }
         );
     });
@@ -897,16 +963,17 @@ function attachProductListeners() {
             ".delete-button"
         );
 
+
     deleteButtons.forEach(button => {
 
         button.addEventListener(
             "click",
             () => {
 
-                const productIndex =
+                const index =
                     Number(button.dataset.index);
 
-                deleteProduct(productIndex);
+                deleteProduct(index);
             }
         );
     });
@@ -921,18 +988,17 @@ function attachProductListeners() {
             ".save-button"
         );
 
+
     saveButtons.forEach(button => {
 
         button.addEventListener(
             "click",
             () => {
 
-                const productIndex =
+                const index =
                     Number(button.dataset.index);
 
-                saveEditedProduct(
-                    productIndex
-                );
+                saveEditedProduct(index);
             }
         );
     });
@@ -947,21 +1013,38 @@ function attachProductListeners() {
             ".cancel-button"
         );
 
+
     cancelButtons.forEach(button => {
 
         button.addEventListener(
             "click",
-            () => {
-
-                cancelEdit();
-            }
+            cancelEdit
         );
     });
 }
 
 
 // ============================================
-// 13. Add Chip
+// 15. Get Editable Product
+// ============================================
+
+function getEditableProduct(index) {
+
+    if (
+        editingIndex === index &&
+        editDraft !== null
+    ) {
+
+        return editDraft;
+    }
+
+
+    return products[index];
+}
+
+
+// ============================================
+// 16. Add Chip
 // ============================================
 
 function addChipFromInput(input) {
@@ -969,13 +1052,16 @@ function addChipFromInput(input) {
     let value =
         input.value.trim();
 
+
     if (value === "") {
         return;
     }
 
 
     const productIndex =
-        Number(input.dataset.productIndex);
+        Number(
+            input.dataset.productIndex
+        );
 
     const type =
         input.dataset.type;
@@ -989,11 +1075,16 @@ function addChipFromInput(input) {
     // ----------------------------------------
 
     if (normalize === "lowercase") {
-        value = value.toLowerCase();
+
+        value =
+            value.toLowerCase();
     }
 
+
     if (normalize === "uppercase") {
-        value = value.toUpperCase();
+
+        value =
+            value.toUpperCase();
     }
 
 
@@ -1002,7 +1093,10 @@ function addChipFromInput(input) {
     // ----------------------------------------
 
     const product =
-        getProductForInput(productIndex);
+        getEditableProduct(
+            productIndex
+        );
+
 
     if (!product) {
         return;
@@ -1012,12 +1106,16 @@ function addChipFromInput(input) {
     let targetArray =
         product.ingredients;
 
+
     if (type === "claim") {
+
         targetArray =
             product.claimedTags;
     }
 
+
     if (type === "allergen") {
+
         targetArray =
             product.declaredAllergens;
     }
@@ -1042,8 +1140,10 @@ function addChipFromInput(input) {
     input.value = "";
 
 
-    // Existing-product edits are still
-    // temporary until SAVE.
+    // ----------------------------------------
+    // Existing Product Edit
+    // ----------------------------------------
+
     if (
         editingIndex === productIndex &&
         editDraft !== null
@@ -1060,7 +1160,10 @@ function addChipFromInput(input) {
     }
 
 
-    // New product / normal live editing.
+    // ----------------------------------------
+    // New Product
+    // ----------------------------------------
+
     markDataChanged();
 
     renderProducts();
@@ -1073,7 +1176,7 @@ function addChipFromInput(input) {
 
 
 // ============================================
-// 14. Restore Tag Input Focus
+// 17. Restore Tag Input Focus
 // ============================================
 
 function restoreTagInputFocus(
@@ -1084,8 +1187,12 @@ function restoreTagInputFocus(
     const selector =
         `.tag-input-field[data-type="${type}"][data-product-index="${productIndex}"]`;
 
+
     const newInput =
-        document.querySelector(selector);
+        document.querySelector(
+            selector
+        );
+
 
     if (newInput) {
         newInput.focus();
@@ -1094,7 +1201,7 @@ function restoreTagInputFocus(
 
 
 // ============================================
-// 15. Remove Chip
+// 18. Remove Chip
 // ============================================
 
 function removeChip(
@@ -1104,7 +1211,10 @@ function removeChip(
 ) {
 
     const product =
-        getProductForInput(productIndex);
+        getEditableProduct(
+            productIndex
+        );
+
 
     if (!product) {
         return;
@@ -1114,12 +1224,16 @@ function removeChip(
     let targetArray =
         product.ingredients;
 
+
     if (type === "claim") {
+
         targetArray =
             product.claimedTags;
     }
 
+
     if (type === "allergen") {
+
         targetArray =
             product.declaredAllergens;
     }
@@ -1139,7 +1253,8 @@ function removeChip(
     );
 
 
-    // Existing edit: keep it temporary.
+    // Existing product edit:
+    // modification is still only in the draft.
     if (
         editingIndex === productIndex &&
         editDraft !== null
@@ -1151,6 +1266,8 @@ function removeChip(
     }
 
 
+    // New product:
+    // modification is immediately real.
     markDataChanged();
 
     renderProducts();
@@ -1158,23 +1275,25 @@ function removeChip(
 
 
 // ============================================
-// 16. Add New Product
+// 19. Add New Product
 // ============================================
 
 function addProduct() {
 
-    // Do not create another edit session.
-    // A new product is edited directly.
+    // Don't create a new product while an
+    // existing product is being edited.
     if (editingIndex !== null) {
         return;
     }
 
 
+    // Generate the next product ID.
     const nextNumber =
         products.length + 1;
 
 
     products.push({
+
         id:
             `F${String(nextNumber).padStart(2, "0")}`,
 
@@ -1199,21 +1318,21 @@ function addProduct() {
     renderProducts();
 
 
-    // New product starts with focus
-    // on its name field.
+    // Focus the name field of the newly
+    // created product.
     const nameInput =
         document.querySelector(
             `.new-product-name[data-index="${newIndex}"]`
         );
+
 
     if (nameInput) {
         nameInput.focus();
     }
 }
 
-
 // ============================================
-// 17. Edit Existing Product
+// 20. Edit Existing Product
 // ============================================
 
 function editProduct(index) {
@@ -1223,26 +1342,31 @@ function editProduct(index) {
     }
 
 
-    // If another row is already being edited,
-    // don't silently replace its draft.
+    // Don't start another edit while one
+    // already exists.
     if (editingIndex !== null) {
         return;
     }
 
 
-    // Newly created products don't need
-    // the existing-product edit workflow.
+    // New products are already directly editable.
     if (products[index].isNew) {
         return;
     }
 
 
-    editingIndex = index;
+    editingIndex =
+        index;
+
 
     editDraft =
-        cloneProduct(products[index]);
+        cloneProduct(
+            products[index]
+        );
 
-    editDraft.isNew = false;
+
+    editDraft.isNew =
+        false;
 
 
     renderProducts();
@@ -1250,7 +1374,7 @@ function editProduct(index) {
 
 
 // ============================================
-// 18. Save Existing Product
+// 21. Save Existing Product
 // ============================================
 
 function saveEditedProduct(index) {
@@ -1263,16 +1387,22 @@ function saveEditedProduct(index) {
     }
 
 
-    // Commit the complete draft.
+    // Commit the entire draft at once.
     products[index] =
-        cloneProduct(editDraft);
+        cloneProduct(
+            editDraft
+        );
 
-    products[index].isNew = false;
+
+    products[index].isNew =
+        false;
 
 
-    editingIndex = null;
+    editingIndex =
+        null;
 
-    editDraft = null;
+    editDraft =
+        null;
 
 
     markDataChanged();
@@ -1282,7 +1412,7 @@ function saveEditedProduct(index) {
 
 
 // ============================================
-// 19. Cancel Existing Product Edit
+// 22. Cancel Existing Product Edit
 // ============================================
 
 function cancelEdit() {
@@ -1295,10 +1425,12 @@ function cancelEdit() {
     }
 
 
-    // Simply discard the draft.
-    editingIndex = null;
+    // Discard the temporary draft.
+    editingIndex =
+        null;
 
-    editDraft = null;
+    editDraft =
+        null;
 
 
     renderProducts();
@@ -1306,7 +1438,7 @@ function cancelEdit() {
 
 
 // ============================================
-// 20. Delete Product
+// 23. Delete Product
 // ============================================
 
 function deleteProduct(index) {
@@ -1316,18 +1448,19 @@ function deleteProduct(index) {
     }
 
 
-    // If the deleted product is the one being
-    // edited, discard the edit session.
+    // If deleting the currently edited row.
     if (editingIndex === index) {
 
-        editingIndex = null;
+        editingIndex =
+            null;
 
-        editDraft = null;
+        editDraft =
+            null;
     }
 
 
-    // If a different row was being edited and
-    // an earlier row is deleted, adjust index.
+    // If deleting something before the row
+    // currently being edited, shift its index.
     else if (
         editingIndex !== null &&
         index < editingIndex
@@ -1350,14 +1483,17 @@ function deleteProduct(index) {
 
 
 // ============================================
-// 21. Load Sample
+// 24. Load Sample
 // ============================================
 
 function loadSample() {
 
-    editingIndex = null;
+    editingIndex =
+        null;
 
-    editDraft = null;
+    editDraft =
+        null;
+
 
     products =
         cloneProducts(
@@ -1378,7 +1514,7 @@ function loadSample() {
 
 
 // ============================================
-// 22. Clear All
+// 25. Clear All
 // ============================================
 
 function clearAll() {
@@ -1395,6 +1531,7 @@ function clearAll() {
                 "Clear all product data and audit results?"
             );
 
+
         if (!confirmed) {
             return;
         }
@@ -1405,13 +1542,17 @@ function clearAll() {
 
     auditResult = null;
 
-    dataChangedSinceAudit = false;
+    dataChangedSinceAudit =
+        false;
 
-    filter = "ALL";
+    filter =
+        "ALL";
 
-    editingIndex = null;
+    editingIndex =
+        null;
 
-    editDraft = null;
+    editDraft =
+        null;
 
 
     clearValidationError();
@@ -1427,7 +1568,7 @@ function clearAll() {
 
 
 // ============================================
-// 23. Compute Audit
+// 26. Compute Audit
 // ============================================
 
 function computeAudit() {
@@ -1435,12 +1576,10 @@ function computeAudit() {
     clearValidationError();
 
 
-    // Audit ONLY the committed products.
-    //
-    // If an existing product is currently being
-    // edited, its changes are still only in
-    // editDraft and therefore are not audited
-    // until SAVE.
+    // ----------------------------------------
+    // Run Audit
+    // ----------------------------------------
+
     const result =
         runAudit(products);
 
@@ -1451,12 +1590,13 @@ function computeAudit() {
 
     if (!result.valid) {
 
-        // Completely remove previous audit
-        // summary and results.
+        // Completely remove any previous
+        // audit summary and results.
         clearAuditOutput();
 
 
-        // Keep current product data visible.
+        // Keep the current product data visible.
+        // New products remain editable.
         showValidationError(
             formatValidationError(
                 result.error
@@ -1464,9 +1604,11 @@ function computeAudit() {
         );
 
 
+        // IMPORTANT:
         // Failed validation does NOT reset
         // dataChangedSinceAudit.
         updateDataChangeBanner();
+
 
         return;
     }
@@ -1476,11 +1618,31 @@ function computeAudit() {
     // Successful Audit
     // ----------------------------------------
 
-    auditResult = result;
+    // Once the data successfully passes
+    // validation, every new product becomes
+    // a normal existing product.
+    products.forEach(product => {
 
-    dataChangedSinceAudit = false;
+        product.isNew =
+            false;
+    });
+
+
+    auditResult =
+        result;
+
+
+    dataChangedSinceAudit =
+        false;
+
 
     clearValidationError();
+
+
+    // Re-render BEFORE showing results so that
+    // new products become clean read-only rows.
+    renderProducts();
+
 
     renderAuditSummary();
 
@@ -1491,7 +1653,7 @@ function computeAudit() {
 
 
 // ============================================
-// 24. Format Validation Errors
+// 27. Format Validation Errors
 // ============================================
 
 function formatValidationError(error) {
@@ -1511,31 +1673,40 @@ function formatValidationError(error) {
             separatorIndex
         );
 
+
     const value =
         error.substring(
             separatorIndex + 1
         );
 
 
-    if (code === "UNKNOWN_INGREDIENT") {
+    if (
+        code === "UNKNOWN_INGREDIENT"
+    ) {
 
         return `Unknown ingredient "${value}".`;
     }
 
 
-    if (code === "INVALID_CLAIM") {
+    if (
+        code === "INVALID_CLAIM"
+    ) {
 
         return `Invalid claim or allergen "${value}".`;
     }
 
 
-    if (code === "DUPLICATE_PRODUCT_ID") {
+    if (
+        code === "DUPLICATE_PRODUCT_ID"
+    ) {
 
         return `Duplicate product ID "${value}".`;
     }
 
 
-    if (code === "INVALID_PRODUCT_ID") {
+    if (
+        code === "INVALID_PRODUCT_ID"
+    ) {
 
         return "Product ID is required.";
     }
@@ -1546,7 +1717,7 @@ function formatValidationError(error) {
 
 
 // ============================================
-// 25. Render Audit Summary
+// 28. Render Audit Summary
 // ============================================
 
 function renderAuditSummary() {
@@ -1574,14 +1745,17 @@ function renderAuditSummary() {
         ).padStart(2, "0");
 
 
-    auditSummary.hidden = false;
+    auditSummary.hidden =
+        false;
 
-    noAuditState.hidden = true;
+
+    noAuditState.hidden =
+        true;
 }
 
 
 // ============================================
-// 26. Render Audit Results
+// 29. Render Audit Results
 // ============================================
 
 function renderAuditResults() {
@@ -1591,7 +1765,8 @@ function renderAuditResults() {
 
     if (!auditResult) {
 
-        noResultsState.hidden = false;
+        noResultsState.hidden =
+            false;
 
         return;
     }
@@ -1600,6 +1775,10 @@ function renderAuditResults() {
     let results =
         auditResult.results;
 
+
+    // ----------------------------------------
+    // Faulty Filter
+    // ----------------------------------------
 
     if (filter === "FAULTY") {
 
@@ -1611,16 +1790,26 @@ function renderAuditResults() {
     }
 
 
+    // ----------------------------------------
+    // No Results
+    // ----------------------------------------
+
     if (results.length === 0) {
 
-        noResultsState.hidden = false;
+        noResultsState.hidden =
+            false;
 
         return;
     }
 
 
-    noResultsState.hidden = true;
+    noResultsState.hidden =
+        true;
 
+
+    // ----------------------------------------
+    // Render Results
+    // ----------------------------------------
 
     results.forEach(result => {
 
@@ -1652,7 +1841,8 @@ function renderAuditResults() {
                 : "faulty";
 
 
-        let detailsHTML = "";
+        let detailsHTML =
+            "";
 
 
         if (
@@ -1722,12 +1912,14 @@ function renderAuditResults() {
 
 
 // ============================================
-// 27. Result Filtering
+// 30. Result Filtering
 // ============================================
 
 function setFilter(newFilter) {
 
-    filter = newFilter;
+    filter =
+        newFilter;
+
 
     updateFilterButtons();
 
@@ -1740,6 +1932,7 @@ function updateFilterButtons() {
     const allActive =
         filter === "ALL";
 
+
     const faultyActive =
         filter === "FAULTY";
 
@@ -1748,6 +1941,7 @@ function updateFilterButtons() {
         "active",
         allActive
     );
+
 
     filterFaultyButton.classList.toggle(
         "active",
@@ -1760,6 +1954,7 @@ function updateFilterButtons() {
         String(allActive)
     );
 
+
     filterFaultyButton.setAttribute(
         "aria-pressed",
         String(faultyActive)
@@ -1768,7 +1963,7 @@ function updateFilterButtons() {
 
 
 // ============================================
-// 28. Button Events
+// 31. Button Events
 // ============================================
 
 addProductButton.addEventListener(
@@ -1808,7 +2003,7 @@ filterFaultyButton.addEventListener(
 
 
 // ============================================
-// 29. Initial Render
+// 32. Initial Render
 // ============================================
 
 function initializeApp() {
@@ -1817,13 +2012,17 @@ function initializeApp() {
 
     auditResult = null;
 
-    dataChangedSinceAudit = false;
+    dataChangedSinceAudit =
+        false;
 
-    filter = "ALL";
+    filter =
+        "ALL";
 
-    editingIndex = null;
+    editingIndex =
+        null;
 
-    editDraft = null;
+    editDraft =
+        null;
 
 
     clearValidationError();
