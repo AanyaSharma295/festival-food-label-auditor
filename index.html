@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Deterministic dietary and allergen auditing tool for festival food products."
+    >
+
+    <title>Festival Food-Label Auditor</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="app">
+
+        <!-- ==========================================
+             01 / HEADER
+        =========================================== -->
+
+        <header class="site-header">
+
+            <p class="eyebrow">
+                FESTIVAL FOOD-LABEL AUDITOR
+            </p>
+
+            <h1>
+                Verify dietary claims<br>
+                and allergen declarations
+            </h1>
+
+        </header>
+
+
+        <!-- ==========================================
+             02 / INGREDIENT RULES
+        =========================================== -->
+
+        <section
+            class="section rules-section"
+            aria-labelledby="rules-heading"
+        >
+
+            <div class="section-heading">
+
+                <p class="section-number">
+                    01 / INGREDIENT RULES
+                </p>
+
+                <h2 id="rules-heading">
+                    Fixed reference table
+                </h2>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="rules-table">
+
+                    <thead>
+                        <tr>
+                            <th scope="col">Ingredient</th>
+                            <th scope="col">Vegetarian</th>
+                            <th scope="col">Vegan</th>
+                            <th scope="col">Allergen</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>rice</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>—</td>
+                        </tr>
+
+                        <tr>
+                            <td>tomato</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>—</td>
+                        </tr>
+
+                        <tr>
+                            <td>milk</td>
+                            <td>✓</td>
+                            <td>✗</td>
+                            <td>MILK</td>
+                        </tr>
+
+                        <tr>
+                            <td>egg</td>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>EGG</td>
+                        </tr>
+
+                        <tr>
+                            <td>peanut</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>PEANUT</td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             03 / PRODUCT DATA
+        =========================================== -->
+
+        <section
+            class="section product-section"
+            aria-labelledby="products-heading"
+        >
+
+            <div class="section-heading product-heading">
+
+                <div>
+
+                    <p class="section-number">
+                        02 / PRODUCT DATA
+                    </p>
+
+                    <h2 id="products-heading">
+                        Products
+                    </h2>
+
+                </div>
+
+                <p
+                    id="product-count"
+                    class="product-count"
+                >
+                    0 PRODUCTS
+                </p>
+
+            </div>
+
+
+            <!-- Product Table -->
+
+            <div
+                class="table-wrapper product-table-wrapper"
+            >
+
+                <table class="product-table">
+
+                    <thead>
+
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Ingredients</th>
+                            <th scope="col">Claimed Tags</th>
+                            <th scope="col">Declared Allergens</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="product-table-body">
+
+                        <!-- Product rows rendered by app.js -->
+
+                    </tbody>
+
+                </table>
+
+
+                <!-- Empty Product State -->
+
+                <div
+                    id="empty-products"
+                    class="empty-state"
+                >
+
+                    <p class="empty-state-title">
+                        NO PRODUCTS YET
+                    </p>
+
+                    <p>
+                        Add a product or load the sample dataset.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Product Controls -->
+
+            <div class="product-controls">
+
+                <button
+                    id="add-product-button"
+                    type="button"
+                    class="button button-secondary"
+                >
+                    + ADD PRODUCT
+                </button>
+
+                <button
+                    id="load-sample-button"
+                    type="button"
+                    class="button button-secondary"
+                >
+                    LOAD SAMPLE
+                </button>
+
+                <button
+                    id="clear-all-button"
+                    type="button"
+                    class="button button-secondary"
+                >
+                    CLEAR ALL
+                </button>
+
+            </div>
+
+
+            <!-- Data Change Banner -->
+
+            <div
+                id="data-change-banner"
+                class="data-change-banner"
+                role="status"
+                hidden
+            >
+                <span aria-hidden="true">⚠</span>
+
+                <span>
+                    Data changed since last audit ·
+                    Click Compute Audit to refresh
+                </span>
+            </div>
+
+
+            <!-- Validation Error -->
+
+            <div
+                id="validation-error"
+                class="validation-error"
+                role="alert"
+                hidden
+            >
+
+                <p class="validation-error-title">
+                    ⚠ VALIDATION ERROR
+                </p>
+
+                <p
+                    id="validation-error-message"
+                    class="validation-error-message"
+                ></p>
+
+            </div>
+
+
+            <!-- Compute Audit -->
+
+            <div class="audit-action">
+
+                <button
+                    id="compute-audit-button"
+                    type="button"
+                    class="button button-primary"
+                >
+                    COMPUTE AUDIT
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             04 / AUDIT SUMMARY
+        =========================================== -->
+
+        <section
+            id="audit-summary-section"
+            class="section audit-summary-section"
+            aria-labelledby="summary-heading"
+        >
+
+            <div class="section-heading">
+
+                <p class="section-number">
+                    03 / AUDIT SUMMARY
+                </p>
+
+                <h2 id="summary-heading">
+                    Audit summary
+                </h2>
+
+            </div>
+
+
+            <div
+                id="audit-summary"
+                class="audit-summary"
+            >
+
+                <div class="summary-metric">
+
+                    <span
+                        id="summary-clean"
+                        class="summary-number"
+                    >
+                        0
+                    </span>
+
+                    <span class="summary-label">
+                        CLEAN
+                    </span>
+
+                </div>
+
+
+                <div class="summary-metric">
+
+                    <span
+                        id="summary-faulty"
+                        class="summary-number"
+                    >
+                        0
+                    </span>
+
+                    <span class="summary-label">
+                        FAULTY
+                    </span>
+
+                </div>
+
+
+                <div class="summary-metric">
+
+                    <span
+                        id="summary-issues"
+                        class="summary-number"
+                    >
+                        0
+                    </span>
+
+                    <span class="summary-label">
+                        ISSUES
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- No Audit State -->
+
+            <div
+                id="no-audit-state"
+                class="empty-state"
+            >
+
+                <p class="empty-state-title">
+                    NO AUDIT RUN
+                </p>
+
+                <p>
+                    Enter products and select "Compute Audit".
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             05 / AUDIT RESULTS
+        =========================================== -->
+
+        <section
+            id="audit-results-section"
+            class="section audit-results-section"
+            aria-labelledby="results-heading"
+        >
+
+            <div class="section-heading results-heading">
+
+                <div>
+
+                    <p class="section-number">
+                        04 / AUDIT RESULTS
+                    </p>
+
+                    <h2 id="results-heading">
+                        Results
+                    </h2>
+
+                </div>
+
+
+                <!-- Result Filter -->
+
+                <div
+                    class="result-filter"
+                    role="group"
+                    aria-label="Filter audit results"
+                >
+
+                    <button
+                        id="filter-all-button"
+                        type="button"
+                        class="filter-button active"
+                        aria-pressed="true"
+                    >
+                        ALL PRODUCTS
+                    </button>
+
+                    <button
+                        id="filter-faulty-button"
+                        type="button"
+                        class="filter-button"
+                        aria-pressed="false"
+                    >
+                        FAULTY ONLY
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Results -->
+
+            <div
+                id="audit-results"
+                class="audit-results"
+            >
+
+                <!-- Results rendered by app.js -->
+
+            </div>
+
+
+            <!-- No Results State -->
+
+            <div
+                id="no-results-state"
+                class="empty-state"
+            >
+
+                <p class="empty-state-title">
+                    NO AUDIT RESULTS
+                </p>
+
+                <p>
+                    Run an audit to see product results.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ==========================================
+         Native Datalists
+    =========================================== -->
+
+    <datalist id="ingredient-options">
+        <option value="rice"></option>
+        <option value="tomato"></option>
+        <option value="milk"></option>
+        <option value="egg"></option>
+        <option value="peanut"></option>
+    </datalist>
+
+
+    <datalist id="claim-options">
+        <option value="VEGETARIAN"></option>
+        <option value="VEGAN"></option>
+    </datalist>
+
+
+    <datalist id="allergen-options">
+        <option value="EGG"></option>
+        <option value="MILK"></option>
+        <option value="PEANUT"></option>
+    </datalist>
+
+
+    <!-- ==========================================
+         JavaScript
+    =========================================== -->
+
+    <script src="audit.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
