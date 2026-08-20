@@ -79,14 +79,14 @@ const productId = String(product.id ?? "").trim();
 if (!/^F\d+$/.test(productId)) {
     return {
         valid: false,
-        error: "INVALID_PRODUCT_ID"
+        error: `INVALID_PRODUCT_ID:${productId}`
     };
 }
 
 if (seenIds.has(productId)) {
     return {
         valid: false,
-        error: "DUPLICATE_PRODUCT_ID"
+        error: `DUPLICATE_PRODUCT_ID:${productId}`
     };
 }
 

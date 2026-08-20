@@ -1712,16 +1712,15 @@ function formatValidationError(error) {
 
 
     if (
-    code === "INVALID_PRODUCT_ID"
+        code === "INVALID_PRODUCT_ID"
     ) {
 
-    return "Invalid Product ID. Use the format F followed by one or more digits, e.g. F01.";
+        return `Invalid Product ID "${value}". Use the format F followed by one or more digits, e.g. F01.`;
     }
 
 
     return error;
 }
-
 
 // ============================================
 // 28. Render Audit Summary
