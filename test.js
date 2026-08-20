@@ -567,6 +567,74 @@ test("Product ordering remains unchanged with arbitrary IDs", () => {
     );
 });
 
+
+
+// Edge case: Product ID must start with F and contain digits.
+test("Product ID must follow F plus digits format", () => {
+
+    const invalidIds = [
+        "",
+        "   ",
+        "F",
+        "P01",
+        "f01",
+        "FABC",
+        "F-1",
+        "F 1",
+        "1F",
+        "F1A"
+    ];
+
+    for (const id of invalidIds) {
+
+        const result = runAudit([
+            {
+                id,
+                name: "Test",
+                ingredients: ["rice"],
+                claimedTags: [],
+                declaredAllergens: []
+            }
+        ]);
+
+        assertEqual(
+            result.error,
+            "INVALID_PRODUCT_ID",
+            `"${id}" should be rejected as an invalid Product ID`
+        );
+    }
+});
+
+
+// Edge case: F followed by one or more digits is valid.
+test("Valid Product IDs follow F plus digits format", () => {
+
+    const validIds = [
+        "F1",
+        "F2",
+        "F10",
+        "F01",
+        "F999"
+    ];
+
+    for (const id of validIds) {
+
+        const result = runAudit([
+            {
+                id,
+                name: "Test",
+                ingredients: ["rice"],
+                claimedTags: [],
+                declaredAllergens: []
+            }
+        ]);
+
+        assert(
+            result.valid,
+            `"${id}" should be accepted as a valid Product ID`
+        );
+    }
+});
 // ============================================
 // Final Test Report
 // ============================================
