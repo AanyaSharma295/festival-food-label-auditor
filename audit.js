@@ -3,6 +3,7 @@
 // Domain / Business Logic
 // ============================================
 
+
 // --------------------------------------------
 // 1. Fixed Ingredient Rules
 // --------------------------------------------
@@ -61,43 +62,50 @@ const VALID_ALLERGENS = Object.freeze([
 // --------------------------------------------
 
 function validateProducts(products) {
+
     const seenIds = new Set();
 
     for (const product of products) {
 
+        // ------------------------------------
         // Product ID
-const productId = String(product.id ?? "").trim();
+        // ------------------------------------
 
-// Product ID must be exactly:
-// F + one or more digits
-//
-// Valid:
-// F1, F2, F10, F01
-//
-// Invalid:
-// empty, whitespace, F, FABC, P01, f01, F-1, etc.
-if (!/^F\d+$/.test(productId)) {
-    return {
-        valid: false,
-        error: `INVALID_PRODUCT_ID:${productId}`
-    };
-}
+        const productId =
+            String(product.id ?? "").trim();
 
-if (seenIds.has(productId)) {
-    return {
-        valid: false,
-        error: `DUPLICATE_PRODUCT_ID:${productId}`
-    };
-}
+        // Product ID must be non-empty
+        if (productId === "") {
 
-seenIds.add(productId);
+            return {
+                valid: false,
+                error: "INVALID_PRODUCT_ID"
+            };
+        }
+
+        // Product IDs must be unique
+        if (seenIds.has(productId)) {
+
+            return {
+                valid: false,
+                error: `DUPLICATE_PRODUCT_ID:${productId}`
+            };
+        }
+
+        seenIds.add(productId);
 
 
+        // ------------------------------------
         // Ingredients
+        // ------------------------------------
+
         for (const ingredient of product.ingredients) {
-            const ingredientId = String(ingredient).trim();
+
+            const ingredientId =
+                String(ingredient).trim();
 
             if (!INGREDIENT_RULES[ingredientId]) {
+
                 return {
                     valid: false,
                     error: `UNKNOWN_INGREDIENT:${ingredientId}`
@@ -106,11 +114,17 @@ seenIds.add(productId);
         }
 
 
+        // ------------------------------------
         // Dietary claims
+        // ------------------------------------
+
         for (const claim of product.claimedTags) {
-            const tag = String(claim).trim();
+
+            const tag =
+                String(claim).trim();
 
             if (!VALID_CLAIMS.includes(tag)) {
+
                 return {
                     valid: false,
                     error: `INVALID_CLAIM:${tag}`
@@ -119,11 +133,17 @@ seenIds.add(productId);
         }
 
 
+        // ------------------------------------
         // Declared allergens
+        // ------------------------------------
+
         for (const allergen of product.declaredAllergens) {
-            const value = String(allergen).trim();
+
+            const value =
+                String(allergen).trim();
 
             if (!VALID_ALLERGENS.includes(value)) {
+
                 return {
                     valid: false,
                     error: `INVALID_CLAIM:${value}`
@@ -131,6 +151,7 @@ seenIds.add(productId);
             }
         }
     }
+
 
     return {
         valid: true,
@@ -144,23 +165,25 @@ seenIds.add(productId);
 // --------------------------------------------
 
 function deriveDietaryFacts(ingredients) {
+
     let vegetarian = true;
     let vegan = true;
 
     const seenIngredients = new Set();
 
     for (const ingredient of ingredients) {
-        const ingredientId = String(ingredient).trim();
 
-        // Repeated ingredients must not affect
-        // the result more than once.
+        const ingredientId =
+            String(ingredient).trim();
+
         if (seenIngredients.has(ingredientId)) {
             continue;
         }
 
         seenIngredients.add(ingredientId);
 
-        const rule = INGREDIENT_RULES[ingredientId];
+        const rule =
+            INGREDIENT_RULES[ingredientId];
 
         if (!rule.vegetarian) {
             vegetarian = false;
@@ -183,11 +206,16 @@ function deriveDietaryFacts(ingredients) {
 // --------------------------------------------
 
 function deriveAllergens(ingredients) {
+
     const derivedAllergens = new Set();
 
     for (const ingredient of ingredients) {
-        const ingredientId = String(ingredient).trim();
-        const rule = INGREDIENT_RULES[ingredientId];
+
+        const ingredientId =
+            String(ingredient).trim();
+
+        const rule =
+            INGREDIENT_RULES[ingredientId];
 
         for (const allergen of rule.allergens) {
             derivedAllergens.add(allergen);
@@ -219,13 +247,24 @@ const ALLERGEN_ORDER = Object.freeze([
 // --------------------------------------------
 
 function auditProduct(product) {
-    const facts = deriveDietaryFacts(product.ingredients);
-    const derivedAllergens = deriveAllergens(product.ingredients);
+
+    const facts =
+        deriveDietaryFacts(
+            product.ingredients
+        );
+
+    const derivedAllergens =
+        deriveAllergens(
+            product.ingredients
+        );
 
     const issues = [];
 
 
+    // ----------------------------------------
     // Dietary issues
+    // ----------------------------------------
+
     for (const tag of DIETARY_ORDER) {
 
         if (!product.claimedTags.includes(tag)) {
@@ -238,38 +277,55 @@ function auditProduct(product) {
                 : facts.vegan;
 
         if (!supported) {
-            issues.push(`INCORRECT_DIETARY_TAG:${tag}`);
+            issues.push(
+                `INCORRECT_DIETARY_TAG:${tag}`
+            );
         }
     }
 
 
+    // ----------------------------------------
     // Missing allergens
+    // ----------------------------------------
+
     for (const allergen of ALLERGEN_ORDER) {
 
         if (
             derivedAllergens.includes(allergen) &&
             !product.declaredAllergens.includes(allergen)
         ) {
-            issues.push(`MISSING_ALLERGEN:${allergen}`);
+
+            issues.push(
+                `MISSING_ALLERGEN:${allergen}`
+            );
         }
     }
 
 
+    // ----------------------------------------
     // Incorrect allergens
+    // ----------------------------------------
+
     for (const allergen of ALLERGEN_ORDER) {
 
         if (
             product.declaredAllergens.includes(allergen) &&
             !derivedAllergens.includes(allergen)
         ) {
-            issues.push(`INCORRECT_ALLERGEN:${allergen}`);
+
+            issues.push(
+                `INCORRECT_ALLERGEN:${allergen}`
+            );
         }
     }
 
 
     return {
         productId: product.id,
-        status: issues.length === 0 ? "CLEAN" : "FAULTY",
+        status:
+            issues.length === 0
+                ? "CLEAN"
+                : "FAULTY",
         issues
     };
 }
@@ -283,9 +339,12 @@ function runAudit(products) {
 
     // Validation must happen before
     // any audit processing.
-    const validation = validateProducts(products);
+
+    const validation =
+        validateProducts(products);
 
     if (!validation.valid) {
+
         return {
             valid: false,
             error: validation.error,
@@ -299,27 +358,72 @@ function runAudit(products) {
     }
 
 
-    const results = products.map(product =>
-        auditProduct(product)
-    );
+    // ----------------------------------------
+    // Normalize product data
+    // ----------------------------------------
+
+    const normalizedProducts =
+        products.map(product => ({
+
+            ...product,
+
+            id:
+                String(
+                    product.id ?? ""
+                ).trim(),
+
+            ingredients:
+                product.ingredients.map(
+                    ingredient =>
+                        String(ingredient).trim()
+                ),
+
+            claimedTags:
+                product.claimedTags.map(
+                    claim =>
+                        String(claim).trim()
+                ),
+
+            declaredAllergens:
+                product.declaredAllergens.map(
+                    allergen =>
+                        String(allergen).trim()
+                )
+        }));
 
 
-    // Summary is based on the complete
-    // audit, not any UI filtering.
-    let clean = 0;
-    let faulty = 0;
-    let totalIssues = 0;
+    // ----------------------------------------
+    // Audit all products
+    // ----------------------------------------
 
-    for (const result of results) {
+    const results =
+        normalizedProducts.map(product =>
+            auditProduct(product)
+        );
 
-        if (result.status === "CLEAN") {
-            clean++;
-        } else {
-            faulty++;
-        }
 
-        totalIssues += result.issues.length;
-    }
+    // ----------------------------------------
+    // Summary
+    // ----------------------------------------
+
+    const clean =
+        results.filter(
+            result =>
+                result.status === "CLEAN"
+        ).length;
+
+    const faulty =
+        results.filter(
+            result =>
+                result.status === "FAULTY"
+        ).length;
+
+    const totalIssues =
+        results.reduce(
+            (total, result) =>
+                total + result.issues.length,
+            0
+        );
 
 
     return {
