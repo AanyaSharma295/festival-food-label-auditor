@@ -1669,10 +1669,26 @@ function formatValidationError(error) {
         error.indexOf(":");
 
 
+    // ----------------------------------------
+    // Errors without an attached value
+    // ----------------------------------------
+
     if (separatorIndex === -1) {
+
+        if (
+            error === "INVALID_PRODUCT_ID"
+        ) {
+
+            return "Invalid Product ID. Product ID cannot be empty.";
+        }
+
         return error;
     }
 
+
+    // ----------------------------------------
+    // Extract error code and value
+    // ----------------------------------------
 
     const code =
         error.substring(
@@ -1680,12 +1696,15 @@ function formatValidationError(error) {
             separatorIndex
         );
 
-
     const value =
         error.substring(
             separatorIndex + 1
         );
 
+
+    // ----------------------------------------
+    // Unknown ingredient
+    // ----------------------------------------
 
     if (
         code === "UNKNOWN_INGREDIENT"
@@ -1695,6 +1714,10 @@ function formatValidationError(error) {
     }
 
 
+    // ----------------------------------------
+    // Invalid claim / allergen
+    // ----------------------------------------
+
     if (
         code === "INVALID_CLAIM"
     ) {
@@ -1703,19 +1726,15 @@ function formatValidationError(error) {
     }
 
 
+    // ----------------------------------------
+    // Duplicate Product ID
+    // ----------------------------------------
+
     if (
         code === "DUPLICATE_PRODUCT_ID"
     ) {
 
         return `Duplicate product ID "${value}".`;
-    }
-
-
-    if (
-        code === "INVALID_PRODUCT_ID"
-    ) {
-
-        return `Invalid Product ID "${value}". Use the format F followed by one or more digits, e.g. F01.`;
     }
 
 
