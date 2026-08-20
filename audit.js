@@ -66,23 +66,31 @@ function validateProducts(products) {
     for (const product of products) {
 
         // Product ID
-        const productId = String(product.id ?? "").trim();
+const productId = String(product.id ?? "").trim();
 
-        if (productId === "") {
-            return {
-                valid: false,
-                error: "INVALID_PRODUCT_ID"
-            };
-        }
+// Product ID must be exactly:
+// F + one or more digits
+//
+// Valid:
+// F1, F2, F10, F01
+//
+// Invalid:
+// empty, whitespace, F, FABC, P01, f01, F-1, etc.
+if (!/^F\d+$/.test(productId)) {
+    return {
+        valid: false,
+        error: "INVALID_PRODUCT_ID"
+    };
+}
 
-        if (seenIds.has(productId)) {
-            return {
-                valid: false,
-                error: "DUPLICATE_PRODUCT_ID"
-            };
-        }
+if (seenIds.has(productId)) {
+    return {
+        valid: false,
+        error: "DUPLICATE_PRODUCT_ID"
+    };
+}
 
-        seenIds.add(productId);
+seenIds.add(productId);
 
 
         // Ingredients
