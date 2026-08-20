@@ -746,13 +746,39 @@ The current product data remains available for correction.
 
 Product IDs must be trimmed, non-empty, and unique.
 
+There is no required format or prefix for Product IDs. Any non-empty Product ID is valid as long as it is unique.
+
+Product IDs are trimmed before validation and auditing.
+
+For example:
+
+`" F01 "` → `"F01"`
+
+An empty or whitespace-only Product ID produces:
+
+`INVALID_PRODUCT_ID`
+
+A duplicate Product ID produces:
+
+`DUPLICATE_PRODUCT_ID:<id>`
+
 Possible validation errors: `INVALID_PRODUCT_ID`, `DUPLICATE_PRODUCT_ID`
 
 ---
 
 ## 42. Ingredient Validation
 
-Every ingredient must exist in the fixed ingredient rule table. E.g. `rice, sesame` produces `UNKNOWN_INGREDIENT`. Repeated ingredient IDs must not duplicate derived facts or issues.
+Every ingredient ID must be trimmed and must exist in the fixed ingredient rule table.
+
+For example:
+
+`" rice "` → `"rice"`
+
+An unknown ingredient such as `sesame` produces:
+
+`UNKNOWN_INGREDIENT:sesame`
+
+Repeated ingredient IDs must not duplicate derived facts or issues.
 
 ---
 
@@ -1064,7 +1090,7 @@ No old audit result may remain visible.
 
 ## 70. Additional Test Coverage
 
-**Product Validation** — empty ID, whitespace-only ID, duplicate ID, trimmed ID
+**Product Validation** — empty ID, whitespace-only ID, arbitrary non-empty ID, duplicate ID, trimmed ID
 
 **Ingredients** — valid ingredient, unknown ingredient, duplicate ingredient, multiple unknown ingredients
 
@@ -1123,6 +1149,9 @@ Constraints:
 - No DOM dependencies in audit.js.
 - Fixed ingredient rules cannot be modified.
 - Preserve exact issue ordering.
+- Product IDs must be trimmed, non-empty, and unique.
+- Any non-empty Product ID format is valid; do not require an F prefix or numeric format.
+- Ingredient IDs must be trimmed before rule lookup.
 - Unknown ingredients must be detected.
 - Invalid claims must be detected.
 - Do not add functionality outside the PRD.
@@ -1138,7 +1167,10 @@ Cover:
 - corrected F02
 - empty input
 - unknown ingredient
+- empty and whitespace-only product IDs
+- arbitrary valid Product IDs
 - duplicate IDs
+- trimmed Product IDs
 - invalid claims
 - duplicate ingredients
 - missing allergens
@@ -1218,7 +1250,9 @@ The expected dataset is small. The audit should execute effectively instantaneou
 - Clean/faulty classification and summary counts are correct.
 
 **Validation**
-- Invalid IDs, duplicate IDs, unknown ingredients, and invalid claims are detected.
+- Empty/whitespace-only Product IDs, duplicate Product IDs, unknown ingredients, and invalid claims are detected.
+- Non-empty Product IDs are otherwise unrestricted and are trimmed before validation and auditing.
+- Ingredient IDs are trimmed before rule lookup.
 - Validation errors appear when Compute Audit fails; current product data remains visible.
 - Previous audit summary and results are completely cleared after validation failure.
 - No stale audit output remains next to a validation error.
