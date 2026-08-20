@@ -570,6 +570,7 @@ The datalist provides suggestions but does not restrict input.
 Known suggestions: `VEGETARIAN`, `VEGAN`
 
 ```html
+
 <input list="claim-options">
 
 <datalist id="claim-options">
