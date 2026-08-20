@@ -384,14 +384,18 @@ function createNewProductRow(
 
     row.innerHTML = `
         <td>
-            <input
-                type="text"
-                class="edit-text-input new-product-id"
-                data-index="${index}"
-                value="${escapeHTML(product.id)}"
-                aria-label="Product ID"
-            >
-        </td>
+    <input
+        type="text"
+        class="edit-text-input new-product-id"
+        data-index="${index}"
+        value="${escapeHTML(product.id)}"
+        placeholder="F01"
+        aria-label="Product ID"
+        pattern="F[0-9]+"
+        title="Product ID must be F followed by one or more digits, e.g. F01"
+        autocomplete="off"
+    >
+</td>
 
         <td>
             <input
@@ -481,11 +485,14 @@ function createEditProductRow(
     row.innerHTML = `
         <td>
             <input
-                type="text"
-                class="edit-text-input edit-product-id"
-                data-index="${index}"
-                value="${escapeHTML(product.id)}"
-                aria-label="Product ID"
+            type="text"
+            class="edit-text-input edit-product-id"
+            data-index="${index}"
+            value="${escapeHTML(product.id)}"
+            aria-label="Product ID"
+            pattern="F[0-9]+"
+            title="Product ID must be F followed by one or more digits, e.g. F01"
+            autocomplete="off"
             >
         </td>
 
@@ -757,7 +764,7 @@ function attachProductListeners() {
 
 
                 product.id =
-                    input.value.trim();
+                    input.value;
 
                 markDataChanged();
             }
@@ -1287,15 +1294,13 @@ function addProduct() {
     }
 
 
-    // Generate the next product ID.
-    const nextNumber =
-        products.length + 1;
-
-
+    // Product ID is intentionally empty.
+    // The user must provide their own ID.
+    // Validation happens when Compute Audit
+    // is pressed.
     products.push({
 
-        id:
-            `F${String(nextNumber).padStart(2, "0")}`,
+        id: "",
 
         name: "",
 
@@ -1318,18 +1323,20 @@ function addProduct() {
     renderProducts();
 
 
-    // Focus the name field of the newly
-    // created product.
-    const nameInput =
+    // Focus the Product ID field first.
+    // The user enters the ID before the name
+    // and the remaining product data.
+    const idInput =
         document.querySelector(
-            `.new-product-name[data-index="${newIndex}"]`
+            `.new-product-id[data-index="${newIndex}"]`
         );
 
 
-    if (nameInput) {
-        nameInput.focus();
+    if (idInput) {
+        idInput.focus();
     }
 }
+
 
 // ============================================
 // 20. Edit Existing Product
@@ -1705,10 +1712,10 @@ function formatValidationError(error) {
 
 
     if (
-        code === "INVALID_PRODUCT_ID"
+    code === "INVALID_PRODUCT_ID"
     ) {
 
-        return "Product ID is required.";
+    return "Invalid Product ID. Use the format F followed by one or more digits, e.g. F01.";
     }
 
 
