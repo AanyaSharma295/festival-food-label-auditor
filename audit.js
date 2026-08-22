@@ -42,7 +42,7 @@ const INGREDIENT_RULES = Object.freeze({
 
 
 // --------------------------------------------
-// 2. Valid Tokens
+// 2. Fixed Valid Tokens
 // --------------------------------------------
 
 const VALID_CLAIMS = Object.freeze([
@@ -54,7 +54,7 @@ const VALID_ALLERGENS = Object.freeze([
     "EGG",
     "MILK",
     "PEANUT"
-]);
+]);   //stored in arrays as further we'll use .includes() to check the membership
 
 
 // --------------------------------------------
@@ -64,6 +64,7 @@ const VALID_ALLERGENS = Object.freeze([
 function validateProducts(products) {
 
     const seenIds = new Set();
+    //used set because product ids must be non empty n unique
 
     for (const product of products) {
 
@@ -73,6 +74,7 @@ function validateProducts(products) {
 
         const productId =
             String(product.id ?? "").trim();
+            //gives fallback value only if left side of ?? is null or undefined
 
         // Product ID must be non-empty
         if (productId === "") {
@@ -178,6 +180,7 @@ function deriveDietaryFacts(ingredients) {
 
         if (seenIngredients.has(ingredientId)) {
             continue;
+            //skip the ingredient alr processed once
         }
 
         seenIngredients.add(ingredientId);
@@ -227,7 +230,7 @@ function deriveAllergens(ingredients) {
 
 
 // --------------------------------------------
-// 6. Issue Ordering
+// 6. Issue Ordering //fixed
 // --------------------------------------------
 
 const DIETARY_ORDER = Object.freeze([
@@ -239,7 +242,7 @@ const ALLERGEN_ORDER = Object.freeze([
     "EGG",
     "MILK",
     "PEANUT"
-]);
+]); //the sequence in which incorrect dietary tags and allergens will be listed
 
 
 // --------------------------------------------
